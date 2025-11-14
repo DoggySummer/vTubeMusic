@@ -6,11 +6,9 @@ import { useMutation } from "@tanstack/react-query";
 
 type Platform = "soop" | "chzzk" | "youtube";
 
-export default function ArtistPage() {
-  const [name, setName] = useState("");
-  const [groupId, setGroupId] = useState("");
+export default function GroupPage() {
+  const [groupName, setGroupName] = useState("");
   const [platform, setPlatform] = useState<Platform | "">("");
-  const [platformLink, setPlatformLink] = useState("");
   const [youtubeLink, setYoutubeLink] = useState("");
 
   const platforms: {
@@ -25,20 +23,18 @@ export default function ArtistPage() {
   ];
 
   const getPlatformValue = (platformKey: Platform): string => {
-    const platformOption = platforms.find((p) => p.key === platformKey);
-    return platformOption?.value || "";
+    const platform = platforms.find((p) => p.key === platformKey);
+    return platform?.value || "";
   };
 
   const mutation = useMutation({
     mutationFn: async (data: {
       name: string;
-      group_id: string;
-      platform_link: string | null;
       platform_id: string;
-      youtube_link: string;
+      link: string;
     }) => {
       try {
-        const response = await fetch("http://localhost:3200/artist/add", {
+        const response = await fetch("http://localhost:3200/group/add", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -87,61 +83,38 @@ export default function ArtistPage() {
     const platformValue = getPlatformValue(platform as Platform);
 
     mutation.mutate({
-      name,
-      group_id: groupId,
-      platform_link: platformLink || null,
+      name: groupName,
       platform_id: platformValue,
-      youtube_link: youtubeLink,
+      link: youtubeLink,
     });
   };
 
   const handleReset = () => {
-    setName("");
-    setGroupId("");
+    setGroupName("");
     setPlatform("");
-    setPlatformLink("");
     setYoutubeLink("");
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
       <div className="w-full max-w-2xl space-y-6">
-        <h1 className="text-3xl font-bold text-center">아티스트 등록</h1>
+        <h1 className="text-3xl font-bold text-center">그룹 등록</h1>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* 이름 입력 */}
+          {/* 그룹 이름 입력 */}
           <div className="space-y-2">
             <label
-              htmlFor="name"
+              htmlFor="groupName"
               className="block text-sm font-medium text-gray-700"
             >
-              이름
+              그룹 이름
             </label>
             <input
-              id="name"
+              id="groupName"
               type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="아티스트 이름을 입력하세요"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            />
-          </div>
-
-          {/* 그룹 ID 입력 */}
-          <div className="space-y-2">
-            <label
-              htmlFor="groupId"
-              className="block text-sm font-medium text-gray-700"
-            >
-              그룹 ID
-            </label>
-            <input
-              id="groupId"
-              type="text"
-              value={groupId}
-              onChange={(e) => setGroupId(e.target.value)}
-              placeholder="그룹 ID를 입력하세요"
+              value={groupName}
+              onChange={(e) => setGroupName(e.target.value)}
+              placeholder="그룹 이름을 입력하세요"
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
             />
@@ -182,24 +155,6 @@ export default function ArtistPage() {
                 </label>
               ))}
             </div>
-          </div>
-
-          {/* 플랫폼 링크 입력 */}
-          <div className="space-y-2">
-            <label
-              htmlFor="platformLink"
-              className="block text-sm font-medium text-gray-700"
-            >
-              플랫폼 링크
-            </label>
-            <input
-              id="platformLink"
-              type="url"
-              value={platformLink}
-              onChange={(e) => setPlatformLink(e.target.value)}
-              placeholder="플랫폼 링크를 입력하세요 (선택사항)"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
           </div>
 
           {/* 유튜브 링크 입력 */}

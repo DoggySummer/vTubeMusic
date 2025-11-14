@@ -48,6 +48,7 @@ export async function GET(request: NextRequest) {
       thumbnail: snippet.thumbnails.high?.url || snippet.thumbnails.default?.url,
       viewCount: parseInt(statistics.viewCount || "0", 10),
       likeCount: parseInt(statistics.likeCount || "0", 10),
+      publishedAt: snippet.publishedAt,
     });
   } catch (error) {
     console.error("YouTube API 오류:", error);

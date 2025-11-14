@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { FaMusic, FaCopy } from "react-icons/fa";
+import { FaMusic, FaCopy, FaMicrophone } from "react-icons/fa";
 
 interface FilterItem {
   id: string;
@@ -116,6 +116,7 @@ export default function Filter() {
   const types: FilterItem[] = [
     { id: "original", name: "오리지널", icon: <FaMusic /> },
     { id: "cover", name: "커버곡", icon: <FaCopy /> },
+    { id: "concert", name: "콘서트", icon: <FaMicrophone /> },
   ];
 
   const handlePlatformToggle = (id: string) => {

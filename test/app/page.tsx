@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import { useMutation } from "@tanstack/react-query";
 
 interface VideoInfo {
   title: string;
@@ -9,10 +10,10 @@ interface VideoInfo {
   thumbnail: string;
   viewCount: number;
   likeCount: number;
+  publishedAt: string;
 }
 
-type Platform = "soop" | "chzzk" | "youtube" | null;
-type VideoType = "original" | "cover" | null;
+type VideoType = "original" | "cover" | "concert" | null;
 
 export default function Home() {
   const [url, setUrl] = useState("");
@@ -20,8 +21,9 @@ export default function Home() {
   const [videoInfo, setVideoInfo] = useState<VideoInfo | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [selectedPlatform, setSelectedPlatform] = useState<Platform>(null);
   const [selectedVideoType, setSelectedVideoType] = useState<VideoType>(null);
+  const [artistName, setArtistName] = useState("");
+  const [songName, setSongName] = useState("");
 
   const extractVideoId = (url: string): string | null => {
     // 다양한 YouTube URL 형식 처리
@@ -80,8 +82,123 @@ export default function Home() {
     }
   };
 
+  const getVideoTypeValue = (type: VideoType): string => {
+    switch (type) {
+      case "original":
+        return "1";
+      case "cover":
+        return "2";
+      case "concert":
+        return "3";
+      default:
+        return "";
+    }
+  };
+
+  const getCurrentDate = (): string => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const day = String(now.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
+
+  const formatPublishedDate = (publishedAt: string): string => {
+    const date = new Date(publishedAt);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
+
+  const mutation = useMutation({
+    mutationFn: async (data: {
+      vId: string;
+      artist_name: string;
+      uploaded_at: string;
+      type: string;
+      image: string;
+      link: string;
+      title: string;
+      name: string;
+    }) => {
+      try {
+        const response = await fetch("http://localhost:3200/song/add", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(data),
+        });
+
+        if (!response.ok) {
+          let errorMessage = "요청에 실패했습니다.";
+          try {
+            const error = await response.json();
+            errorMessage = error.error || error.message || errorMessage;
+          } catch {
+            errorMessage = `서버 오류: ${response.status} ${response.statusText}`;
+          }
+          throw new Error(errorMessage);
+        }
+
+        return response.json();
+      } catch (error) {
+        if (error instanceof TypeError && error.message === "Failed to fetch") {
+          throw new Error(
+            "서버에 연결할 수 없습니다. 백엔드 서버가 http://localhost:3200에서 실행 중인지 확인해주세요."
+          );
+        }
+        throw error;
+      }
+    },
+    onSuccess: () => {
+      alert("저장되었습니다!");
+      handleReset();
+    },
+    onError: (error: Error) => {
+      alert(`오류가 발생했습니다: ${error.message}`);
+    },
+  });
+
   const handleSave = () => {
-    alert("저장되었습니다!");
+    if (!videoId) {
+      alert("비디오 ID가 없습니다. 먼저 YouTube URL을 확인해주세요.");
+      return;
+    }
+
+    if (!artistName) {
+      alert("아티스트 이름을 입력해주세요.");
+      return;
+    }
+
+    if (!songName) {
+      alert("노래 이름을 입력해주세요.");
+      return;
+    }
+
+    if (!selectedVideoType) {
+      alert("영상 타입을 선택해주세요.");
+      return;
+    }
+
+    if (!videoInfo) {
+      alert("영상 정보를 불러오지 못했습니다.");
+      return;
+    }
+
+    const requestData = {
+      vId: videoId,
+      artist_name: artistName,
+      uploaded_at: formatPublishedDate(videoInfo.publishedAt),
+      type: getVideoTypeValue(selectedVideoType),
+      image: videoInfo.thumbnail,
+      link: url,
+      title: videoInfo.title,
+      name: songName,
+    };
+
+    mutation.mutate(requestData);
   };
 
   const handleReset = () => {
@@ -89,8 +206,9 @@ export default function Home() {
     setVideoId(null);
     setVideoInfo(null);
     setError(null);
-    setSelectedPlatform(null);
     setSelectedVideoType(null);
+    setArtistName("");
+    setSongName("");
   };
 
   return (
@@ -191,77 +309,64 @@ export default function Home() {
                   </div>
                 </div>
 
-                {/* 비디오 ID */}
+                {/* 비디오 ID 및 업로드 날짜 */}
                 <div className="pt-2 border-t border-gray-200">
-                  <p className="text-xs text-gray-500 mb-1">비디오 ID:</p>
-                  <p className="text-sm font-mono text-gray-700">{videoId}</p>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-xs text-gray-500 mb-1">비디오 ID:</p>
+                      <p className="text-sm font-mono text-gray-700">
+                        {videoId}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-xs text-gray-500 mb-1">업로드 날짜:</p>
+                      <p className="text-sm text-gray-700">
+                        {formatPublishedDate(videoInfo.publishedAt)}
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* 플랫폼 및 타입 선택 */}
+            {/* 타입 및 입력 선택 */}
             <div className="w-64 space-y-4">
-              {/* 플랫폼 선택 라디오 버튼 */}
+              {/* 아티스트 이름 입력 */}
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  플랫폼 선택
+                <label
+                  htmlFor="artistName"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  아티스트 이름
                 </label>
-                <div className="flex flex-col gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setSelectedPlatform("soop")}
-                    className={`flex items-center justify-center gap-2 px-4 py-3 border-2 rounded-lg transition-all ${
-                      selectedPlatform === "soop"
-                        ? "border-blue-500 bg-blue-50 shadow-md"
-                        : "border-gray-300 bg-white hover:border-gray-400"
-                    }`}
-                  >
-                    <Image
-                      src="/soop.png"
-                      alt="숲"
-                      width={24}
-                      height={24}
-                      className="object-contain"
-                    />
-                    <span className="font-medium">숲</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setSelectedPlatform("chzzk")}
-                    className={`flex items-center justify-center gap-2 px-4 py-3 border-2 rounded-lg transition-all ${
-                      selectedPlatform === "chzzk"
-                        ? "border-blue-500 bg-blue-50 shadow-md"
-                        : "border-gray-300 bg-white hover:border-gray-400"
-                    }`}
-                  >
-                    <Image
-                      src="/chzzk.png"
-                      alt="치지직"
-                      width={24}
-                      height={24}
-                      className="object-contain"
-                    />
-                    <span className="font-medium">치지직</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setSelectedPlatform("youtube")}
-                    className={`flex items-center justify-center gap-2 px-4 py-3 border-2 rounded-lg transition-all ${
-                      selectedPlatform === "youtube"
-                        ? "border-blue-500 bg-blue-50 shadow-md"
-                        : "border-gray-300 bg-white hover:border-gray-400"
-                    }`}
-                  >
-                    <Image
-                      src="/yotubue.svg"
-                      alt="유튜브"
-                      width={24}
-                      height={24}
-                      className="object-contain"
-                    />
-                    <span className="font-medium">유튜브</span>
-                  </button>
-                </div>
+                <input
+                  id="artistName"
+                  type="text"
+                  value={artistName}
+                  onChange={(e) => setArtistName(e.target.value)}
+                  placeholder="아티스트 이름을 입력하세요"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required
+                />
+              </div>
+
+              {/* 노래 이름 입력 */}
+              <div className="space-y-2">
+                <label
+                  htmlFor="songName"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  노래 이름
+                </label>
+                <input
+                  id="songName"
+                  type="text"
+                  value={songName}
+                  onChange={(e) => setSongName(e.target.value)}
+                  placeholder="노래 이름을 입력하세요"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required
+                />
               </div>
 
               {/* 타입 선택 라디오 버튼 */}
@@ -292,6 +397,17 @@ export default function Home() {
                   >
                     커버곡
                   </button>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedVideoType("concert")}
+                    className={`px-4 py-3 border-2 rounded-lg transition-all font-medium ${
+                      selectedVideoType === "concert"
+                        ? "border-blue-500 bg-blue-50 shadow-md text-blue-700"
+                        : "border-gray-300 bg-white hover:border-gray-400 text-gray-700"
+                    }`}
+                  >
+                    콘서트
+                  </button>
                 </div>
               </div>
 
@@ -300,9 +416,10 @@ export default function Home() {
                 <button
                   type="button"
                   onClick={handleSave}
-                  className="w-full px-4 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 font-medium transition-all"
+                  disabled={mutation.isPending}
+                  className="w-full px-4 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  저장하기
+                  {mutation.isPending ? "저장 중..." : "저장하기"}
                 </button>
                 <button
                   type="button"

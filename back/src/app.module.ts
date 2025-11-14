@@ -1,8 +1,12 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { UserModule } from './user/user.module';
-import { User } from './user/user.entity';
+import { ArtistModule } from './artist/artist.module';
+import { Artist } from './artist/artist.entity';
+import { GroupModule } from './group/group.module';
+import { Group } from './group/group.entity';
+import { SongModule } from './song/song.module';
+import { Song } from './song/song.entity';
 
 @Module({
   imports: [
@@ -18,8 +22,8 @@ import { User } from './user/user.entity';
         username: config.get<string>('DB_USER'),
         password: config.get<string>('DB_PASSWORD'),
         database: config.get<string>('DB_NAME'),
-        entities: [User],
-        synchronize: config.get<string>('NODE_ENV') === 'development', // 개발 환경에서만 true
+        entities: [Artist, Group, Song],
+        synchronize: false, // 테이블 자동 생성 비활성화
         ssl: { rejectUnauthorized: false }, // Supabase SSL 연결 시 필요
         extra: {
           // Supabase Session Pooler 연결 풀 최적화
@@ -29,7 +33,9 @@ import { User } from './user/user.entity';
         },
       }),
     }),
-    UserModule,
+    ArtistModule,
+    GroupModule,
+    SongModule,
   ],
 })
 export class AppModule {}
