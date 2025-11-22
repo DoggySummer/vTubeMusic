@@ -61,9 +61,7 @@ function FilterSection({
                 key={item.id}
                 onClick={() => onToggle(item.id)}
                 className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
-                  isSelected
-                    ? "bg-gray-700"
-                    : "hover:bg-gray-800"
+                  isSelected ? "bg-gray-700" : "hover:bg-gray-800"
                 }`}
               >
                 <div className="relative w-10 h-10 flex-shrink-0 flex items-center justify-center">
@@ -132,7 +130,7 @@ export default function Filter() {
   };
 
   return (
-    <div className="w-full max-w-xs">
+    <div style={{ width: "320px", flexShrink: 0 }}>
       <FilterSection
         title="타입"
         items={types}
@@ -148,4 +146,3 @@ export default function Filter() {
     </div>
   );
 }
-
