@@ -10,20 +10,21 @@ export class GroupService {
     private readonly groupRepo: Repository<Group>,
   ) {}
 
-  async checkConnection() {
+  async getGroups(platform_id?: string) {
     try {
-      const count = await this.groupRepo.count();
+      const where = platform_id ? { platform_id } : {};
+      const groups = await this.groupRepo.find({
+        where,
+        relations: ['artists'],
+      });
       return {
         status: 'success',
-        connected: true,
-        message: 'Supabase Session Pooler 연결 성공',
-        groupCount: count,
+        groups,
       };
     } catch (err) {
       return {
         status: 'error',
-        connected: false,
-        message: `DB 연결 실패: ${err.message}`,
+        message: `그룹 조회 실패: ${err.message}`,
       };
     }
   }

@@ -13,20 +13,28 @@ export class ArtistService {
     private readonly groupRepo: Repository<Group>,
   ) {}
 
-  async checkConnection() {
+  async getArtist(name: string) {
     try {
-      const count = await this.artistRepo.count();
+      const artist = await this.artistRepo.findOne({
+        where: { name },
+        relations: ['group'],
+      });
+
+      if (!artist) {
+        return {
+          status: 'error',
+          message: `아티스트를 찾을 수 없습니다. name: ${name}`,
+        };
+      }
+
       return {
         status: 'success',
-        connected: true,
-        message: 'Supabase Session Pooler 연결 성공',
-        artistCount: count,
+        artist,
       };
     } catch (err) {
       return {
         status: 'error',
-        connected: false,
-        message: `DB 연결 실패: ${err.message}`,
+        message: `아티스트 조회 실패: ${err.message}`,
       };
     }
   }
@@ -68,6 +76,35 @@ export class ArtistService {
       return {
         status: 'error',
         message: `아티스트 추가 실패: ${err.message}`,
+      };
+    }
+  }
+
+  async updateThumbnail(name: string, thumbnail: string) {
+    try {
+      const artist = await this.artistRepo.findOne({
+        where: { name },
+      });
+
+      if (!artist) {
+        return {
+          status: 'error',
+          message: `아티스트를 찾을 수 없습니다. name: ${name}`,
+        };
+      }
+
+      artist.thumbnail = thumbnail;
+      const updatedArtist = await this.artistRepo.save(artist);
+
+      return {
+        status: 'success',
+        message: '썸네일이 성공적으로 업데이트되었습니다.',
+        artist: updatedArtist,
+      };
+    } catch (err) {
+      return {
+        status: 'error',
+        message: `썸네일 업데이트 실패: ${err.message}`,
       };
     }
   }

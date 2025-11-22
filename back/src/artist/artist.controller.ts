@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body } from '@nestjs/common';
+import { Controller, Get, Post, Body, Query } from '@nestjs/common';
 import { ArtistService } from './artist.service';
 
 @Controller('artist')
@@ -6,8 +6,8 @@ export class ArtistController {
   constructor(private readonly artistService: ArtistService) {}
 
   @Get()
-  async checkConnection() {
-    return await this.artistService.checkConnection();
+  async getArtist(@Query('name') name: string) {
+    return await this.artistService.getArtist(name);
   }
 
   @Post('add')
@@ -28,5 +28,16 @@ export class ArtistController {
       body.platform_id,
       body.youtube_link,
     );
+  }
+
+  @Post('thumbnail')
+  async updateThumbnail(
+    @Body()
+    body: {
+      name: string;
+      thumbnail: string;
+    },
+  ) {
+    return await this.artistService.updateThumbnail(body.name, body.thumbnail);
   }
 }

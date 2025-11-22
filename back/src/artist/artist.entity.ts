@@ -24,6 +24,9 @@ export class Artist {
   @Column({ nullable: true })
   youtube_link: string;
 
+  @Column({ nullable: true })
+  thumbnail: string;
+
   @ManyToOne(() => Group, (group) => group.artists)
   @JoinColumn({ name: 'group_id' })
   group: Group;

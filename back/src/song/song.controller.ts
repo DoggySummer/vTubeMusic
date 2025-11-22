@@ -5,11 +5,6 @@ import { SongService } from './song.service';
 export class SongController {
   constructor(private readonly songService: SongService) {}
 
-  @Get()
-  async checkConnection() {
-    return await this.songService.checkConnection();
-  }
-
   @Post('add')
   async addSong(
     @Body()

@@ -13,24 +13,6 @@ export class SongService {
     private readonly artistRepo: Repository<Artist>,
   ) {}
 
-  async checkConnection() {
-    try {
-      const count = await this.songRepo.count();
-      return {
-        status: 'success',
-        connected: true,
-        message: 'Supabase Session Pooler 연결 성공',
-        songCount: count,
-      };
-    } catch (err) {
-      return {
-        status: 'error',
-        connected: false,
-        message: `DB 연결 실패: ${err.message}`,
-      };
-    }
-  }
-
   async addSong(
     vId: string,
     artist_name: string,

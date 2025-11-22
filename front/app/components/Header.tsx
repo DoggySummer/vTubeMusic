@@ -1,14 +1,19 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function Header() {
   const [searchQuery, setSearchQuery] = useState("");
+  const router = useRouter();
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    // 검색 로직은 나중에 구현
-    console.log("검색:", searchQuery);
+    if (searchQuery.trim()) {
+      // URL 인코딩하여 아티스트 페이지로 이동
+      const encodedName = encodeURIComponent(searchQuery.trim());
+      router.push(`/artist/${encodedName}`);
+    }
   };
 
   return (
