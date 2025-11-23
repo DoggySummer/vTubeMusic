@@ -18,7 +18,7 @@ export default function Sidebar() {
   };
 
   return (
-    <aside className="w-64 h-[calc(100vh-6rem)] sticky top-24 rounded-lg hidden md:flex flex-col bg-[#121212]">
+    <aside className="w-64 h-full rounded-lg hidden md:flex flex-col bg-[#121212]">
       <div className="bg-[#121212] rounded-lg p-6 h-full">
         <div className="flex items-center space-x-2 mb-6 text-gray-400 hover:text-white transition-colors cursor-pointer">
           <svg

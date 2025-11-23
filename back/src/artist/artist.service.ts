@@ -17,7 +17,7 @@ export class ArtistService {
     try {
       const artist = await this.artistRepo.findOne({
         where: { name },
-        relations: ['group'],
+        relations: ['group', 'songs'],
       });
 
       if (!artist) {
@@ -29,7 +29,10 @@ export class ArtistService {
 
       return {
         status: 'success',
-        artist,
+        artist: {
+          ...artist,
+          song: artist.songs || [],
+        },
       };
     } catch (err) {
       return {

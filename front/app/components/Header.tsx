@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export default function Header() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -22,9 +23,11 @@ export default function Header() {
         <div className="relative flex items-center justify-between h-16">
           {/* 로고 */}
           <div className="absolute left-0 flex items-center">
-            <h1 className="text-3xl font-bold text-white tracking-tight">
-              VTubeMusic
-            </h1>
+            <Link href="/" className="cursor-pointer">
+              <h1 className="text-3xl font-bold text-white tracking-tight hover:text-gray-200 transition-colors">
+                VTubeMusic
+              </h1>
+            </Link>
           </div>
 
           {/* 검색창 - 중앙 정렬 */}
